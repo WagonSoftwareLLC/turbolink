@@ -37,12 +37,13 @@ EGrpcContextState UGrpcClient::GetContextState(FGrpcContextHandle Handle) const
 	return (*context)->GetState();
 }
 
-void UGrpcClient::AddMetadataToContext(FGrpcContextHandle Handle, FString Key, FString Value)
+bool UGrpcClient::AddMetadataToContext(FGrpcContextHandle Handle, FString Key, FString Value)
 {
 	const TSharedPtr<GrpcContext>* context = ContextMap.Find(Handle);
-	if (context == nullptr) return;
+	if (context == nullptr) return false;
 
 	(*context)->RpcContext->AddMetadata(std::string(TCHAR_TO_UTF8(*Key)), std::string(TCHAR_TO_UTF8(*Value)));
+	return true;
 }
 
 void UGrpcClient::TryCancelContext(FGrpcContextHandle Handle)
