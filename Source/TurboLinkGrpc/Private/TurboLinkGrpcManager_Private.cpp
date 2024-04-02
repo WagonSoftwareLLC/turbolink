@@ -127,6 +127,7 @@ void UTurboLinkGrpcManager::Private::ShutdownCompletionQueue()
 	}
 }
 
+#if PLATFORM_WINDOWS
 grpc::SslCredentialsOptions UTurboLinkGrpcManager::Private::getSslOptions()
 {
 	// Fetch root certificate as required on Windows (s. issue 25533).
@@ -166,3 +167,4 @@ std::string UTurboLinkGrpcManager::Private::utf8Encode(const std::wstring& wstr)
 	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], sizeNeeded, NULL, NULL);
 	return strTo;
 }
+#endif
