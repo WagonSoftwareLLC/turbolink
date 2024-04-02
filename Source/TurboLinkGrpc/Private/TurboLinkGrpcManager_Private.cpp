@@ -51,8 +51,20 @@ std::shared_ptr<UTurboLinkGrpcManager::Private::ServiceChannel> UTurboLinkGrpcMa
 	//is server-side tls mode?
 	if (config->EnableServerSideTLS)
 	{
+		FString ServerRootCerts = config->GetServerRootCerts();
+		
 		grpc::SslCredentialsOptions ssl_opts;
-		ssl_opts.pem_root_certs = TCHAR_TO_UTF8(*(config->GetServerRootCerts()));
+		ssl_opts.pem_root_certs = TCHAR_TO_UTF8(*ServerRootCerts);
+
+		// If we are on Windows, we need to fetch the root certificates from the system registry
+		// otherwise grpc source will try to default to a linux system path that doesn't exist
+#if PLATFORM_WINDOWS
+		if (ServerRootCerts.IsEmpty())
+		{
+			ssl_opts = getSslOptions();
+		}
+#endif
+		
 		channel->RpcChannel = grpc::CreateCustomChannel(EndPoint, grpc::SslCredentials(ssl_opts), args);
 	}
 	else
@@ -115,3 +127,42 @@ void UTurboLinkGrpcManager::Private::ShutdownCompletionQueue()
 	}
 }
 
+grpc::SslCredentialsOptions UTurboLinkGrpcManager::Private::getSslOptions()
+{
+	// Fetch root certificate as required on Windows (s. issue 25533).
+	grpc::SslCredentialsOptions result;
+
+	// Open root certificate store.
+	HANDLE hRootCertStore = CertOpenSystemStoreW(NULL, L"ROOT");
+	if (!hRootCertStore)
+		return result;
+
+	// Get all root certificates.
+	PCCERT_CONTEXT pCert = NULL;
+	while ((pCert = CertEnumCertificatesInStore(hRootCertStore, pCert)) != NULL)
+	{
+		// Append this certificate in PEM formatted data.
+		DWORD size = 0;
+		CryptBinaryToStringW(pCert->pbCertEncoded, pCert->cbCertEncoded, CRYPT_STRING_BASE64HEADER,
+			NULL, &size);
+		std::vector<WCHAR> pem(size);
+		CryptBinaryToStringW(pCert->pbCertEncoded, pCert->cbCertEncoded, CRYPT_STRING_BASE64HEADER,
+			pem.data(), &size);
+
+		result.pem_root_certs += utf8Encode(pem.data());
+	}
+
+	CertCloseStore(hRootCertStore, 0);
+	return result;
+}
+
+std::string UTurboLinkGrpcManager::Private::utf8Encode(const std::wstring& wstr)
+{
+	if (wstr.empty())
+		return std::string();
+
+	int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+	std::string strTo(sizeNeeded, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], sizeNeeded, NULL, NULL);
+	return strTo;
+}
