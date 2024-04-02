@@ -2,6 +2,10 @@
 #include "TurboLinkGrpcManager_Private.h"
 #include "TurboLinkGrpcModule.h"
 
+#if PLATFORM_WINDOWS
+#include <wincrypt.h>
+#endif
+
 EGrpcServiceState UTurboLinkGrpcManager::Private::GrpcStateToServiceState(grpc_connectivity_state State)
 {
 	switch (State)
