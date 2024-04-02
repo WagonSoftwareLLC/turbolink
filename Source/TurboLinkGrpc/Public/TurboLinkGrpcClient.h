@@ -94,6 +94,9 @@ public:
 	EGrpcContextState GetContextState(FGrpcContextHandle Handle) const;
 
 	UFUNCTION(BlueprintCallable, Category = TurboLink)
+	bool AddMetadataToContext(FGrpcContextHandle Handle, FString Key, FString Value);
+
+	UFUNCTION(BlueprintCallable, Category = TurboLink)
 	void TryCancelContext(FGrpcContextHandle Handle);
 
 	UFUNCTION(BlueprintCallable, Category = TurboLink)
