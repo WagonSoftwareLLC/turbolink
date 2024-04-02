@@ -1,3 +1,7 @@
+# Don't upload intermidiate or binaries
+/Binaries
+/Intermediate
+
 # Don't upload generated dependency libs / includes
 /Source/ThirdParty
 
