@@ -19,12 +19,8 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
-				"Win64",
-				"Mac",
-				"Linux",
-				"IOS",
-				"Android",
-				"PS5"
+				"Win64"
+				"Linux"
 			]
 		},
 		{
@@ -32,8 +28,7 @@
 			"Type": "UncookedOnly",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
-				"Win64",
-				"Mac"
+				"Win64"
 			]
 		}
 	]

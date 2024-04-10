@@ -11,18 +11,6 @@ class TURBOLINKGRPC_API UTurboLinkGrpcConfig : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
-	// The bearer string used in authorization metadata
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Authorization")
-	FString Bearer;
-
-	// The bucket containing assets being requested
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Request Config")
-	FString Bucket;
-
-	// Base path inside the bucket where assets are located
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Request Config")
-	FString BasePath;
-
 	//Enables retry functionality. 
 	//Defaults to true.  When enabled, configurable retries are enabled when they are configured via the service config.
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Channel Config")
