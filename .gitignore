@@ -15,3 +15,6 @@
 # Exceptions for original turbolink code files
 !/Source/TurboLinkGrpc/Public/TurboLinkGrpc*.*
 !/Source/TurboLinkGrpc/Private/TurboLinkGrpc*.*
+
+# Exclude Output directory for generated code
+/Output
