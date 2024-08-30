@@ -38,7 +38,7 @@ public:
 	UGrpcService* MakeService(const FString& ServiceName);
 
 	UFUNCTION(BlueprintCallable, Category = TurboLink)
-	void ReleaseService(UGrpcService* Service);
+	void ReleaseService(UGrpcService* Service, bool bForce = false);
 
 	UFUNCTION(BlueprintCallable, Category = TurboLink)
 	EGrpcServiceState GetServiceState(UGrpcService* Service);

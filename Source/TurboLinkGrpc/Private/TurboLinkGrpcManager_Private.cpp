@@ -126,7 +126,6 @@ void UTurboLinkGrpcManager::Private::ShutdownCompletionQueue()
 	}
 }
 
-
 #if PLATFORM_WINDOWS
 #include <wincrypt.h>
 grpc::SslCredentialsOptions UTurboLinkGrpcManager::Private::getSslOptions()

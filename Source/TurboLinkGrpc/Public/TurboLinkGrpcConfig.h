@@ -11,7 +11,24 @@ class TURBOLINKGRPC_API UTurboLinkGrpcConfig : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
-	//Enables retry functionality. 
+	//Module name, where generated code is located.
+	//If empty, generated code should be in the same folder as the TurboLinkGrpc module.
+	UPROPERTY(Config, VisibleAnywhere, BlueprintReadOnly, Category = "Build Config")
+	FString ModuleName = "";
+
+	// The bearer string used in authorization metadata
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Authorization")
+	FString Bearer;
+
+	// The bucket containing assets being requested
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Request Config")
+	FString Bucket;
+
+	// Base path inside the bucket where assets are located
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Request Config")
+	FString BasePath;
+
+	//Enables retry functionality.
 	//Defaults to true.  When enabled, configurable retries are enabled when they are configured via the service config.
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Channel Config")
 	bool EnableRetries = true;
@@ -53,7 +70,7 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Services Config")
 	TMap<FString, FString> ServiceEndPoint;
 
-	//After waiting for a duration of this times(seconds), 
+	//After waiting for a duration of this times(seconds),
 	// the gRPC service object will be deleted if no other object references it.
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Services Config")
 	int KeepServiceAliveWithoutRefrenceSeconds = 60;

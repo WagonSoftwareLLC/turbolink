@@ -150,6 +150,41 @@ The result is `{"name" : "neo"}`
 #### 4.2 Json string to Grpc message
 ![json-to-message](https://github.com/thejinchao/turbolink/wiki/image/json_to_message.png)  
 
+## 5. How to place generated code into project's separate module
+1. In the ``Source`` folder of your project, create a new folder with any name (we will use ``ProtobufGen``)
+2. Create ``ProtobufGen.Build.cs file``
+```csharp
+using UnrealBuildTool;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Reflection;
+using UnrealBuildBase;
+
+public class ProtobufGen : ModuleRules
+{
+	public ProtobufGen(ReadOnlyTargetRules Target) : base(Target)
+	{
+		Type = ModuleType.External;
+		PublicDependencyModuleNames.AddRange(new[]
+		{
+			"Core", "CoreUObject", "Engine"
+		});
+		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Public"));
+		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private"));
+		// Include GRPC and protobuf code
+		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private", "pb"));
+		{
+			PrivateIncludePathModuleNames.Add("TurboLinkGrpc");
+			string GrpcModuleDirectory = GetModuleDirectory("TurboLinkGrpc");
+			PrivateIncludePaths.Add(Path.Combine(GrpcModuleDirectory, "Public"));
+			PrivateIncludePaths.Add(Path.Combine(GrpcModuleDirectory, "Private"));
+		}
+	}
+}
+```
+3. Place all generated code (``Private`` and ``Public`` folders) near the ``ProtobufGen.Builds.cs``
+4. Build the project
 
 ## Feature not yet implemented
 One of the design purposes of TurboLink is to be able to use the gRPC directly in the blueprint, so some `proto3` features cannot be implemented in TurboLink yet.

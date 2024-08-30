@@ -37,10 +37,10 @@ public:
 	void ShutdownCompletionQueue();
 
 #if PLATFORM_WINDOWS
+private:
 	static grpc::SslCredentialsOptions getSslOptions();
 	static std::string utf8Encode(const std::wstring& wstr);
 #endif
-
 public:
 	std::map<std::string, std::shared_ptr<ServiceChannel>> ChannelMap;
 	std::unique_ptr<grpc::CompletionQueue> CompletionQueue;

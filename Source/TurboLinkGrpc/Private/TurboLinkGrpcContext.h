@@ -15,10 +15,14 @@ class GrpcContext : public TSharedFromThis<GrpcContext>
 	friend class UTurboLinkGrpcManager;
 	friend class UGrpcClient;
 public:
-    FGrpcContextHandle GetHandle() const
-    {
-        return Handle;
-    }
+	FGrpcContextHandle& GetHandle()
+	{
+		return Handle;
+	}
+	const FGrpcContextHandle& GetHandle() const
+	{
+		return Handle;
+	}
 
     EGrpcContextState GetState() const
     {
@@ -83,7 +87,7 @@ template<typename T, typename R>
 class GrpcContext_Ping_Pong : public TGrpcContext<T, R>
 {
 	typedef TGrpcContext<T, R> Super;
-	
+
 protected:
 	void OnRpcEventInternal(bool Ok, const void* EventTag, typename Super::FRpcCallbackFunc RpcCallbackFunc)
 	{
@@ -205,7 +209,7 @@ protected:
 	bool bWritesDone = false;
 
 protected:
-	void OnRpcEventInternal(bool Ok, const void* EventTag, 
+	void OnRpcEventInternal(bool Ok, const void* EventTag,
 		typename Super::FRpcCallbackFunc RpcCallbackFunc, FSendCompleteCallbackFunc SendCompleteCallbackFunc)
 	{
 		if (!Ok)
@@ -297,7 +301,7 @@ protected:
 	bool bCanSend = false;
 
 protected:
-	void OnRpcEventInternal(bool Ok, const void* EventTag, 
+	void OnRpcEventInternal(bool Ok, const void* EventTag,
 		typename Super::FRpcCallbackFunc RpcCallbackFunc, FSendCompleteCallbackFunc SendCompleteCallbackFunc)
 	{
 		if (!Ok)

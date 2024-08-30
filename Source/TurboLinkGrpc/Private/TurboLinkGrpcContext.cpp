@@ -38,6 +38,11 @@ void GrpcContext::UpdateState(EGrpcContextState NewState)
 		Service->TurboLinkManager->RemoveTag(FinishTag);
 	}
 
+	if (Handle.OnContextStateChanged.IsBound())
+	{
+		Handle.OnContextStateChanged.Broadcast(NewState);
+	}
+
 	if (Client->OnContextStateChange.IsBound())
 	{
 		Client->OnContextStateChange.Broadcast(Handle, NewState);
@@ -76,7 +81,7 @@ EGrpcResultCode GrpcContext::ConvertStatusCode(const grpc::Status& RpcStatus)
 
 	case grpc::StatusCode::NOT_FOUND:
 		return EGrpcResultCode::NotFound;
-		
+
 	case grpc::StatusCode::ALREADY_EXISTS:
 		return EGrpcResultCode::AlreadyExists;
 
@@ -117,8 +122,9 @@ EGrpcResultCode GrpcContext::ConvertStatusCode(const grpc::Status& RpcStatus)
 
 FGrpcResult GrpcContext::MakeGrpcResult(const grpc::Status& RpcStatus)
 {
-	EGrpcResultCode errorCode = ConvertStatusCode(RpcStatus);
-	FString message = StringCast<TCHAR>((const UTF8CHAR*)RpcStatus.error_message().c_str()).Get();
-
-	return FGrpcResult(errorCode, message);
+	return FGrpcResult(
+		ConvertStatusCode(RpcStatus),
+		UTF8_TO_TCHAR(RpcStatus.error_message().c_str()),
+		UTF8_TO_TCHAR(RpcStatus.error_details().c_str())
+	);
 }

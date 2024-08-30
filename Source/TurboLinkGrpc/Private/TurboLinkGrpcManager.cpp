@@ -73,12 +73,13 @@ void UTurboLinkGrpcManager::Tick(float DeltaTime)
 	for (auto& channelElement : d->ChannelMap)
 	{
 		std::shared_ptr<Private::ServiceChannel> serviceChannel = channelElement.second;
-		if (serviceChannel->UpdateState()) 
+		if (serviceChannel->UpdateState())
 		{
 			EGrpcServiceState newState = Private::GrpcStateToServiceState(serviceChannel->ChannelState);
 			for (auto& serviceElement : serviceChannel->AttachedServices)
 			{
 				serviceElement->OnServiceStateChanged.Broadcast(newState);
+				serviceElement->OnServiceStateChangedNative.Broadcast(newState);
 			}
 		}
 	}
@@ -160,7 +161,7 @@ UGrpcService* UTurboLinkGrpcManager::MakeService(const FString& ServiceName)
 {
 	UGrpcService** workingService = WorkingService.Find(ServiceName);
 
-	//find existent working service 
+	//find existent working service
 	if (workingService != nullptr)
 	{
 		//add refrence
@@ -186,12 +187,12 @@ UGrpcService* UTurboLinkGrpcManager::MakeService(const FString& ServiceName)
 	return service;
 }
 
-void UTurboLinkGrpcManager::ReleaseService(UGrpcService* Service)
+void UTurboLinkGrpcManager::ReleaseService(UGrpcService* Service, bool bForce)
 {
 	check(Service);
 
 	//release refrence
-	if (Service->RefrenceCounts > 1) 
+	if (Service->RefrenceCounts > 1)
 	{
 		Service->RefrenceCounts -= 1;
 		UE_LOG(LogTurboLink, Log, TEXT("ReleaseService service[%s], RefrenceCounts=[%d]"), *(Service->GetName()), Service->RefrenceCounts);
@@ -200,7 +201,7 @@ void UTurboLinkGrpcManager::ReleaseService(UGrpcService* Service)
 
 	//pending to shutdown
 	Service->RefrenceCounts = 0;
-	Service->StartPendingShutdown = FPlatformTime::Seconds();
+	Service->StartPendingShutdown = bForce ? TNumericLimits<float>::Min() : FPlatformTime::Seconds();
 
 	UE_LOG(LogTurboLink, Log, TEXT("ReleaseService service[%s], StartPendingShutdown..."), *(Service->GetName()));
 }

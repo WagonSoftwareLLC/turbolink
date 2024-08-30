@@ -4,10 +4,12 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using EpicGames.Core;
 
 public class TurboLinkGrpc : ModuleRules
 {
 	private static TurboLinkPlatform TurboLinkPlatformInstance;
+	private string TurboLinkModuleName;
 
 	public TurboLinkGrpc(ReadOnlyTargetRules Target) : base(Target)
 	{
@@ -35,8 +37,25 @@ public class TurboLinkGrpc : ModuleRules
 		);
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "zlib");
-
-		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/pb"));
+		{
+			ConfigHierarchy GameIni = ConfigCache.ReadHierarchy(ConfigHierarchyType.Game, Target.ProjectFile == null ? (DirectoryReference)null : Target.ProjectFile.Directory, Target.Platform);
+			GameIni.GetString("/Script/TurboLinkGrpc.TurboLinkGrpcConfig", "ModuleName", out TurboLinkModuleName);
+		}
+		if (!string.IsNullOrEmpty(TurboLinkModuleName) && !string.IsNullOrEmpty(GetModuleDirectory(TurboLinkModuleName)))
+		{
+			// Make ThirdParty module as part of plugin
+			string CodegenModuleDirectory = GetModuleDirectory(TurboLinkModuleName);
+			ConditionalAddModuleDirectory(new DirectoryReference(CodegenModuleDirectory));
+			PrivateIncludePaths.Add(Path.Combine(CodegenModuleDirectory, "Public"));
+			PrivateIncludePaths.Add(Path.Combine(CodegenModuleDirectory, "Private"));
+			PrivateIncludePaths.Add(Path.Combine(CodegenModuleDirectory, "Private", "pb"));
+			PrivateDependencyModuleNames.Add(TurboLinkModuleName);
+			System.Console.WriteLine($"Using module {TurboLinkModuleName}");
+		}
+		else
+		{
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private/pb"));
+		}
 
 		//ThirdParty include
 		PrivateIncludePaths.AddRange(
@@ -47,7 +66,7 @@ public class TurboLinkGrpc : ModuleRules
 				Path.Combine(ThirdPartyRoot(), "abseil/include")
 			}
 		);
-		
+
 		//ThirdParty Libraries
 		ConfigurePlatform(Target.Platform.ToString(), Target.Configuration);
 	}
@@ -73,12 +92,12 @@ public class TurboLinkGrpc : ModuleRules
 	{
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "../ThirdParty/"));
 	}
-	
-	private List<string> GrpcLibs = new List<string> 
+
+	private List<string> GrpcLibs = new List<string>
 	{
 		"grpc", "grpc++", "gpr", "upb", "address_sorting"
 	};
-	private List<string> ProtobufLibs = new List<string> 
+	private List<string> ProtobufLibs = new List<string>
 	{
 		"protobuf", "utf8_validity", "utf8_range"
 	};
@@ -118,7 +137,7 @@ public class TurboLinkGrpc : ModuleRules
 	{
 		//turbolink thirdparty libraries root path
 		string root = ThirdPartyRoot();
-		
+
 		//grpc
 		foreach(var lib in GrpcLibs)
 		{
@@ -220,9 +239,9 @@ public class TurboLinkPlatform_Android : TurboLinkPlatform
 	public override string LibrariesPath { get { return "android/"; } }
 	public override List<string> Architectures() { return new List<string> {
 #if UE_5_0_OR_LATER
-		"arm64-v8a/", "x86_64/" 
+		"arm64-v8a/", "x86_64/"
 #else
-		"armeabi-v7a/", "arm64-v8a/", "x86_64/" 
+		"armeabi-v7a/", "arm64-v8a/", "x86_64/"
 #endif
 	}; }
 	public override string LibraryPrefixName { get { return "lib"; } }

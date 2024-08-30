@@ -6,6 +6,7 @@
 
 class UTurboLinkGrpcManager;
 class UGrpcClient;
+struct FGrpcResult;
 
 UENUM(BlueprintType)
 enum class EGrpcServiceState : uint8
@@ -20,6 +21,9 @@ enum class EGrpcServiceState : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnServiceStateChanged, EGrpcServiceState, ServiceState);
+DECLARE_MULTICAST_DELEGATE(FOnShutdown);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnServiceStateChangedNative, EGrpcServiceState/*, ServiceState*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnServiceGrpcError, const FGrpcResult&/*, Result*/);
 
 UCLASS(ClassGroup = TurboLink, BlueprintType, Abstract)
 class TURBOLINKGRPC_API UGrpcService : public UObject
@@ -32,7 +36,7 @@ public:
 	virtual void Connect() {
 		check(0 && "Must override this");
 	}
-	
+
 	virtual EGrpcServiceState GetServiceState() const {
 		check(0 && "Must override this");
 		return EGrpcServiceState::NotCreate;
@@ -63,8 +67,12 @@ public:
 	UPROPERTY()
 	UTurboLinkGrpcManager* TurboLinkManager;
 
+	FOnShutdown OnShutdown;
 	UPROPERTY(BlueprintAssignable, Category = TurboLink)
 	FOnServiceStateChanged OnServiceStateChanged;
+
+	FOnServiceStateChangedNative OnServiceStateChangedNative;
+	FOnServiceGrpcError OnServiceGrpcError;
 
 	UPROPERTY()
 	TSet<UGrpcClient*> ClientSet;

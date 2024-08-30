@@ -33,6 +33,13 @@ void UGrpcService::Shutdown()
 	//already in shutdown progress?
 	if (bIsShutingDown) return;
 
+	OnServiceGrpcError.Clear();
+
+	if (OnShutdown.IsBound()) {
+		OnShutdown.Broadcast();
+		OnShutdown.Clear();
+	}
+
 	OnServiceStateChanged.Clear();
 
 	//Disconnect all clients

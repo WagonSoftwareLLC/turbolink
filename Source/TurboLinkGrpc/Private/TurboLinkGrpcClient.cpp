@@ -18,18 +18,18 @@ void UGrpcClient::AddContext(TSharedPtr<GrpcContext> Context)
 	ContextMap.Add(Context->GetHandle(), Context);
 }
 
-void UGrpcClient::RemoveContext(FGrpcContextHandle Handle)
+void UGrpcClient::RemoveContext(const FGrpcContextHandle& Handle)
 {
 	ContextMap.Remove(Handle);
 }
 
-TSharedPtr<GrpcContext>* UGrpcClient::GetContext(FGrpcContextHandle Handle)
+TSharedPtr<GrpcContext>* UGrpcClient::GetContext(const FGrpcContextHandle& Handle)
 {
 	TSharedPtr<GrpcContext>* context = ContextMap.Find(Handle);
 	return context;
 }
 
-EGrpcContextState UGrpcClient::GetContextState(FGrpcContextHandle Handle) const
+EGrpcContextState UGrpcClient::GetContextState(const FGrpcContextHandle& Handle) const
 {
 	const TSharedPtr<GrpcContext>* context = ContextMap.Find(Handle);
 	if (context == nullptr) return EGrpcContextState::Done;
@@ -37,16 +37,16 @@ EGrpcContextState UGrpcClient::GetContextState(FGrpcContextHandle Handle) const
 	return (*context)->GetState();
 }
 
-bool UGrpcClient::AddMetadataToContext(FGrpcContextHandle Handle, FString Key, FString Value)
+bool UGrpcClient::AddMetadataToContext(const FGrpcContextHandle& Handle, const FString& Key, const FString& Value)
 {
 	const TSharedPtr<GrpcContext>* context = ContextMap.Find(Handle);
 	if (context == nullptr) return false;
 
-	(*context)->RpcContext->AddMetadata(std::string(TCHAR_TO_UTF8(*Key)), std::string(TCHAR_TO_UTF8(*Value)));
+	(*context)->RpcContext->AddMetadata(TCHAR_TO_UTF8(*Key), TCHAR_TO_UTF8(*Value));
 	return true;
 }
 
-void UGrpcClient::TryCancelContext(FGrpcContextHandle Handle)
+void UGrpcClient::TryCancelContext(const FGrpcContextHandle& Handle)
 {
 	const TSharedPtr<GrpcContext>* context = ContextMap.Find(Handle);
 	if (context == nullptr) return;
@@ -57,9 +57,9 @@ void UGrpcClient::TryCancelContext(FGrpcContextHandle Handle)
 void UGrpcClient::Tick(float DeltaTime)
 {
 	//Remove all context that has done.
-	if (ContextMap.Num() > 0) 
+	if (ContextMap.Num() > 0)
 	{
-		TArray<FGrpcContextHandle> contextHandleArray;
+		TArray<uint32> contextHandleArray;
 		ContextMap.GetKeys(contextHandleArray);
 		for (auto handle : contextHandleArray)
 		{
@@ -80,7 +80,7 @@ void UGrpcClient::Shutdown()
 
 	OnContextStateChange.Clear();
 	//Close all context
-	for (auto contextIter : ContextMap) 
+	for (auto contextIter : ContextMap)
 	{
 		TSharedPtr<GrpcContext> context = contextIter.Value;
 		if (context->GetState()== EGrpcContextState::Busy || context->GetState() == EGrpcContextState::Initialing)
@@ -93,7 +93,7 @@ void UGrpcClient::Shutdown()
 
 FString FGrpcResult::GetCodeString() const
 {
-	int preFixLen = FString(TEXT("EGrpcResultCode::")).Len();
+	static const int preFixLen = FString(TEXT("EGrpcResultCode::")).Len();
 	return UEnum::GetValueAsString(Code).RightChop(preFixLen);
 }
 
